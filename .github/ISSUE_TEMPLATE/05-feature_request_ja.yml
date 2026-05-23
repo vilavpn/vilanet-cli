@@ -1,0 +1,122 @@
+name: 機能リクエスト（日本語）
+description: 具体的で評価可能な vilanet-cli の機能リクエストを送ります。
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **解決したい具体的なシナリオを明確に書いてください。曖昧なリクエストはクローズされます。**
+
+        「機能を追加して」「改善して」だけでは不十分です。対象プラットフォーム、機能領域、リクエスト種別、現在の問題、そして追加・変更してほしい**具体的な動作**を記入してください。
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: プラットフォーム
+      description: このリクエストは主にどのプラットフォームに関係しますか？**プレースホルダーのままにせず、必ず手動で選択してください。**
+      options:
+        - "⚠️ プラットフォームを選択してください（未選択のままは無効な投稿として扱われ、クローズされます）"
+        - Linux
+        - macOS
+        - Windows
+        - クロスプラットフォーム
+        - プラットフォーム非依存
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 機能領域
+      description: このリクエストはどの領域に属しますか？**プレースホルダーのままにせず、必ず手動で選択してください。**
+      options:
+        - "⚠️ 機能領域を選択してください（未選択のままは無効な投稿として扱われ、クローズされます）"
+        - 接続とライフサイクル（connect / disconnect / 再接続）
+        - ノード / サーバー選択
+        - アカウント / ログイン / 資格情報の保存
+        - ルーティングモードとルール（routing_mode など）
+        - 設定項目（settings キー）
+        - インストールとバックグラウンドサービス（systemd / LaunchAgent / Windows サービス）
+        - 自動更新（self-update）
+        - 診断とログ（diag / logs）
+        - CLI の使い勝手（コマンド、フラグ、出力形式）
+        - その他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: リクエスト種別
+      description: どのような変更を希望しますか？**プレースホルダーのままにせず、必ず手動で選択してください。**
+      options:
+        - "⚠️ リクエスト種別を選択してください（未選択のままは無効な投稿として扱われ、クローズされます）"
+        - 新しいコマンドまたはフラグ
+        - 新しい設定項目
+        - 既存動作の改善
+        - ドキュメントの改善
+        - プラットフォーム / アーキテクチャ対応の追加
+        - 診断とログの改善
+        - その他
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 現在の問題またはユースケース
+      description: 今、何が不便・不足・誤解を招きやすいですか？実際のシナリオを記入してください。
+      placeholder: |
+        例：スクリプト内で connect が本当にトンネルを確立したか判定できず、sleep してから status を呼ぶしかない。接続準備完了（またはタイムアウト）までブロックするコマンドが欲しい。
+    validations:
+      required: true
+
+  - type: textarea
+    id: requested_behavior
+    attributes:
+      label: 何を追加・変更してほしいですか？
+      description: 概念だけでなく、具体的な動作として記入してください。
+      placeholder: |
+        例：`vilanet-cli connect --wait --timeout 30s` を追加し、トンネル準備完了で終了コード 0、タイムアウトで非 0 を返す。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: 影響度
+      description: この機能はユーザーにどう影響しますか？**プレースホルダーのままにせず、必ず手動で選択してください。**
+      options:
+        - "⚠️ 影響度を選択してください（未選択のままは無効な投稿として扱われ、クローズされます）"
+        - 便利になるだけ
+        - 一部のユーザーに影響
+        - あるプラットフォームの多数のユーザーに影響
+        - あるワークフローを妨げている
+        - わからない
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 補足情報（任意）
+      description: 関連リンク、コマンド例、他ツールでの実装、関連 Issue など。
+      placeholder: "コマンド例、ドキュメントのリンク、関連 Issue のリンクなどを記入できます。"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: integrity
+    attributes:
+      label: 投稿前の確認
+      description: 以下のすべての項目にチェックを入れてください。
+      options:
+        - label: "既存の Issue を検索し、重複リクエストでないことを確認しました。"
+          required: true
+        - label: "プラットフォーム・機能領域・リクエスト種別を具体的に選択しました。"
+          required: true
+        - label: "現在の問題またはユースケースと、追加・変更してほしい具体的な動作を記入しました。"
+          required: true
+        - label: "「機能を追加して」「改善して」のような曖昧なリクエストはクローズされることを理解しています。"
+          required: true

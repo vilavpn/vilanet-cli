@@ -1,0 +1,122 @@
+name: 功能请求（中文）
+description: 提交一个具体、可评估的 vilanet-cli 功能请求。
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **请写清楚你要解决的具体场景。过于模糊的请求会被关闭。**
+
+        不要只写「加个功能」「优化一下」。请说明涉及的平台、功能范围、请求类型、当前问题，以及你希望新增或改变的**具体行为**。
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 平台
+      description: 这个请求主要影响哪个平台？**请手动选择，不要保留默认占位符。**
+      options:
+        - "⚠️ 请选择平台（保留此项会被视为无效提交并关闭）"
+        - Linux
+        - macOS
+        - Windows
+        - 跨平台
+        - 不限定平台
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 功能范围
+      description: 这个请求属于哪一类？**请手动选择，不要保留默认占位符。**
+      options:
+        - "⚠️ 请选择功能范围（保留此项会被视为无效提交并关闭）"
+        - 连接与生命周期（connect / disconnect / 重连）
+        - 节点 / 服务器选择
+        - 账号 / 登录 / 凭据存储
+        - 路由模式与规则（routing_mode 等）
+        - 设置项（settings 键）
+        - 安装与后台服务（systemd / LaunchAgent / Windows 服务）
+        - 自动更新（self-update）
+        - 诊断与日志（diag / logs）
+        - CLI 体验（命令、参数、输出格式）
+        - 其他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: 请求类型
+      description: 你希望我们做哪类改变？**请手动选择，不要保留默认占位符。**
+      options:
+        - "⚠️ 请选择请求类型（保留此项会被视为无效提交并关闭）"
+        - 新增命令或参数
+        - 新增设置项
+        - 改进现有行为
+        - 改进文档
+        - 增加平台 / 架构支持
+        - 改进诊断与日志
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 当前问题或使用场景
+      description: 现在哪里不方便、缺失或容易误解？请描述真实场景。
+      placeholder: |
+        例如：在脚本中无法判断 connect 是否真正建立隧道，只能靠 sleep 后再调用 status，希望有一个会阻塞到连接就绪（或超时）的命令。
+    validations:
+      required: true
+
+  - type: textarea
+    id: requested_behavior
+    attributes:
+      label: 你希望新增或改变什么？
+      description: 请写成具体行为，而不是只写一个概念。
+      placeholder: |
+        例如：增加 `vilanet-cli connect --wait --timeout 30s`，在隧道就绪后返回退出码 0，超时返回非 0。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: 影响程度
+      description: 这个功能对用户有什么影响？**请手动选择，不要保留默认占位符。**
+      options:
+        - "⚠️ 请选择影响程度（保留此项会被视为无效提交并关闭）"
+        - 只是使用更方便
+        - 影响部分用户
+        - 影响某个平台的大量用户
+        - 阻塞了某个工作流程
+        - 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 补充信息（可选）
+      description: 相关链接、示例命令、其他工具的做法、相关 issue 等。
+      placeholder: "可以放示例命令、文档链接、相关 issue 链接等。"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: integrity
+    attributes:
+      label: 提交确认
+      description: 请勾选每一项。
+      options:
+        - label: "我已搜索现有 issues，确认这不是重复请求。"
+          required: true
+        - label: "我已选择具体的平台、功能范围和请求类型。"
+          required: true
+        - label: "我已说明当前问题或使用场景，以及希望新增或改变的具体行为。"
+          required: true
+        - label: "我理解只写「加个功能」「优化一下」这类模糊描述会被关闭。"
+          required: true
