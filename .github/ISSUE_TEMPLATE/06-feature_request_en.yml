@@ -1,0 +1,122 @@
+name: Feature request (English)
+description: Request a specific, actionable vilanet-cli feature.
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Describe the concrete scenario you want solved. Vague requests will be closed.**
+
+        Do not just write "add a feature" or "improve it". Tell us the platform, feature area, request type, current problem, and the exact **behavior** you want changed or added.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform does this mainly affect? **Please pick manually — do not leave the placeholder selected.**
+      options:
+        - "⚠️ Please select a platform (leaving this counts as an invalid submission and will be closed)"
+        - Linux
+        - macOS
+        - Windows
+        - Cross-platform
+        - Not platform-specific
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature area
+      description: Which area does this belong to? **Please pick manually — do not leave the placeholder selected.**
+      options:
+        - "⚠️ Please select a feature area (leaving this counts as an invalid submission and will be closed)"
+        - Connection & lifecycle (connect / disconnect / reconnect)
+        - Node & server selection
+        - Account / login / credential storage
+        - Routing mode & rules (routing_mode, etc.)
+        - Settings keys
+        - Install & background service (systemd / LaunchAgent / Windows Service)
+        - Self-update
+        - Diagnostics & logging (diag / logs)
+        - CLI UX (commands, flags, output format)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      description: What kind of change are you asking for? **Please pick manually — do not leave the placeholder selected.**
+      options:
+        - "⚠️ Please select a request type (leaving this counts as an invalid submission and will be closed)"
+        - New command or flag
+        - New setting key
+        - Improve existing behavior
+        - Improve docs
+        - Add platform / architecture support
+        - Improve diagnostics & logging
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current problem or user scenario
+      description: What is missing, confusing, or inconvenient today? Describe the real scenario.
+      placeholder: |
+        Example: In a script I cannot tell whether connect actually established the tunnel — I have to sleep then call status. I want a command that blocks until the connection is ready (or times out).
+    validations:
+      required: true
+
+  - type: textarea
+    id: requested_behavior
+    attributes:
+      label: What should change?
+      description: Describe the exact behavior you want, not just a broad idea.
+      placeholder: |
+        Example: Add `vilanet-cli connect --wait --timeout 30s` that returns exit code 0 once the tunnel is ready and non-zero on timeout.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      description: How does this affect users? **Please pick manually — do not leave the placeholder selected.**
+      options:
+        - "⚠️ Please select an impact level (leaving this counts as an invalid submission and will be closed)"
+        - Convenience improvement
+        - Affects some users
+        - Affects many users on one platform
+        - Blocks a workflow
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Extra context (optional)
+      description: Related links, example commands, how other tools do it, related issues.
+      placeholder: "Add example commands, doc links, related issue links, etc."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: integrity
+    attributes:
+      label: Submission checklist
+      description: Please check every item.
+      options:
+        - label: "I searched existing issues and confirmed this is not a duplicate."
+          required: true
+        - label: "I selected a specific platform, feature area, and request type."
+          required: true
+        - label: "I explained the current problem or user scenario and the specific behavior I want changed or added."
+          required: true
+        - label: "I understand that vague requests like 'add a feature' or 'improve it' will be closed."
+          required: true
