@@ -49,7 +49,7 @@ arm64 and armv7 builds are also available — replace `linux_amd64` with
 `linux_arm64` or `linux_armv7`.
 
 To run as a persistent background service, install the per-user systemd
-template unit:
+template unit (the `packaging/` directory is included in the release archive):
 
 ```bash
 sudo cp packaging/systemd/vilanet-cli@.service /etc/systemd/system/
@@ -74,7 +74,7 @@ privileges:
 vilanet-cli connect --no-tun --mixed 127.0.0.1:1080
 ```
 
-To install as a per-user LaunchAgent (starts at login, proxy mode):
+To install as a per-user LaunchAgent (starts at login, proxy mode; `scripts/` is in the release archive):
 
 ```bash
 sudo bash scripts/install-macos.sh --agent
@@ -91,7 +91,7 @@ Expand-Archive -Force vilanet-cli_*_windows_amd64.zip .
 
 Run from an **elevated** PowerShell, or install as a Windows Service
 (required for background operation — `--background` is not supported on
-Windows):
+Windows; `packaging\` is included in the release archive):
 
 ```powershell
 New-Item -ItemType Directory -Force "$Env:ProgramFiles\VilaNet" | Out-Null
