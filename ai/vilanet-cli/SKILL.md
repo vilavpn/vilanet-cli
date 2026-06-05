@@ -1,6 +1,6 @@
 ---
 name: vilanet-cli
-description: Drive the vilanet-cli VPN client end-to-end on Linux, macOS, and Windows — login, list packages/servers, connect, switch nodes, disconnect, inspect status, tail logs, change settings, and install/uninstall as a background service. Use whenever the user mentions VilaNet, vilanet-cli, the VilaNet VPN, "connect to my VPN", "switch nodes", "TUN privileges missing", a vilanet-cli exit code (1, 2, 3, 4, 5, 9), a settings key (e.g. routing_mode, tun.stack, hy2.speed_mode), or wants to set up VilaNet as a background service (systemd, LaunchAgent, Windows Service).
+description: Drive the vilanet-cli VPN client end-to-end on Linux, macOS, and Windows — login, list packages/servers, connect, switch nodes, disconnect, inspect status, tail logs, change settings, generate a redacted support bundle (diag), self-update (update, auto_update), and install/uninstall as a background service. Use whenever the user mentions VilaNet, vilanet-cli, the VilaNet VPN, "connect to my VPN", "switch nodes", "TUN privileges missing", a vilanet-cli exit code (1, 2, 3, 4, 5, 9), a settings key (e.g. routing_mode, tun.stack, hy2.speed_mode, network.dns_mode, block_quic, block_stun, block_dot, auto_update), the diag/update commands, or wants to set up VilaNet as a background service (systemd, LaunchAgent, Windows Service).
 ---
 
 # vilanet-cli — operator skill for AI agents
@@ -35,8 +35,8 @@ drive it for an end user.
 $ vilanet-cli login        # stores creds in OS keyring (or plaintext with --insecure-store)
 $ vilanet-cli connect      # foreground; Ctrl-C disconnects
                            # OR --background to detach (Linux/macOS only — see Windows note)
-$ vilanet-cli status       # asks the running daemon over a Unix socket (Linux/macOS only in v0.1.0)
-$ vilanet-cli switch       # tells the daemon to restart on another node (Linux/macOS only in v0.1.0)
+$ vilanet-cli status       # asks the running daemon over a Unix socket (Linux/macOS)
+$ vilanet-cli switch       # tells the daemon to restart on another node (Linux/macOS)
 $ vilanet-cli disconnect   # idempotent
 $ vilanet-cli logout       # clears keyring + caches
 ```
@@ -174,6 +174,35 @@ tails. Poll-based at 200 ms. Log paths per platform:
 - macOS: `~/Library/Logs/com.viraltech.vilanet/`
 - Windows: `%LOCALAPPDATA%\VilaNet\Logs\`
 
+### `diag`
+
+```
+vilanet-cli diag [-o / --output PATH]
+```
+
+Writes a redacted support-bundle `.tar.gz` (logs tail, redacted settings,
+public node IDs) to `${StateDir}/diag/vilanet-cli-diag-<UTC>.tar.gz`. Mode
+`0600` — safe to send to support. Bundles older than 24 h are swept
+automatically. The `-o` flag overrides the output path.
+
+### `update`
+
+```
+vilanet-cli update [--check] [-y / --yes]
+```
+
+Checks for and installs a new release. The background daemon also checks on
+every connect by default. Binaries are Ed25519-signed and SHA256-verified
+before replacing the running binary. `--check` prints availability without
+installing. Force-update floor: if the server requires a minimum version,
+the update runs immediately without `-y`. Disable auto-update permanently
+with `vilanet-cli settings set auto_update false`.
+
+### `version`
+
+Prints version, Go runtime, and platform. Also reachable as the
+`--version` global flag. Useful in bug reports.
+
 ### `logout`
 
 ```
@@ -192,9 +221,15 @@ Persisted to `${ConfigDir}/config.json`. Defaults shown.
 | `dns1`                    | `https://1.0.0.1/dns-query`   | Primary DNS — DoH URL or plain IP                                      |
 | `dns2`                    | `223.5.5.5`                   | Secondary DNS                                                          |
 | `domain_strategy`         | `prefer_ipv4`                 | One of `prefer_ipv4`, `prefer_ipv6`, `ipv4_only`, `ipv6_only`         |
-| `routing_mode`            | `rule`                        | `rule` (China bypass) or `global` (route everything through tunnel)    |
+| `routing_mode`            | `rule`                        | `rule` (China bypass), `global` (everything through tunnel), `direct` (no proxy rules — effectively pauses the tunnel routing) |
 | `block_ads`               | `false`                       | Apply ad-block ruleset                                                 |
 | `block_porn`              | `false`                       | Apply adult-content ruleset                                            |
+| `network.dns_mode`        | `fakeip`                      | `fakeip` or `real` — fake-IP is faster; real DNS works with apps that ignore DNS |
+| `network.sniff_enabled`   | `true`                        | sing-box inbound sniff — needed for SNI-based routing                  |
+| `network.mux_enabled`     | `false`                       | Connection multiplexing                                               |
+| `network.block_dot`       | `default`                     | Tri-state: `true`/`false`/`default`. Blocks DNS-over-TLS on LAN       |
+| `network.block_quic`      | `default`                     | Tri-state. Blocks UDP-443/HTTP3; also fixes Chrome/Gemini blank-page issue (no_drop in v0.1.8) |
+| `network.block_stun`      | `default`                     | Tri-state. Blocks WebRTC STUN — prevents IP leak via WebRTC          |
 | `hy2.speed_mode`          | `off`                         | `off`, `server_default`, `custom` — Hysteria2 bandwidth hint           |
 | `hy2.custom_mbps`         | `0`                           | Only when `hy2.speed_mode=custom`                                      |
 | `hop_interval`            | `10`                          | Hysteria2 port-hop interval in seconds                                 |
@@ -208,6 +243,7 @@ Persisted to `${ConfigDir}/config.json`. Defaults shown.
 | `clash_api.enabled`       | `true`                        | Local Clash API for stats / external control                           |
 | `clash_api.port`          | `9090`                        | Clash API port                                                         |
 | `clash_api.secret`        | `""`                          | Clash API bearer secret (empty = no auth)                              |
+| `auto_update`             | `true`                        | Background auto-update on every connect. Set `false` to disable; use `vilanet-cli update` for manual updates |
 | `selected_package`        | `""`                          | Sticky package id                                                      |
 | `selected_server`         | `""`                          | Sticky node id                                                         |
 
@@ -245,6 +281,7 @@ something seems wrong — it's cheap and tells you whether a daemon is alive.
 | macOS LaunchAgent crash-loop                             | `log show --predicate 'process == "vilanet-cli"' --last 5m` | LaunchAgent runs as user — must use `--no-tun --mixed`, NOT TUN                            |
 | Linux service starts but no IPC                          | `systemctl status vilanet-cli@$USER`             | Confirm capability set: `getcap $(command -v vilanet-cli)` should list `cap_net_admin`           |
 | Windows: tunnel up but apps don't route                  | —                                                | Confirm running as Administrator; check Windows Service status via Services.msc                  |
+| Chrome/Gemini blank page through tunnel                   | `vilanet-cli logs --lines 50`                    | QUIC probe being silently dropped → `vilanet-cli settings set network.block_quic true` as workaround, or upgrade to v0.1.8+ which fixes this via no_drop rule |
 
 ## Install / uninstall
 
