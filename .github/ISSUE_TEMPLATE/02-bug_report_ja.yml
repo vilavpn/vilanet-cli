@@ -1,5 +1,5 @@
 name: バグ報告（日本語）
-description: 再現可能な VilaNet コマンドラインクライアント（vilanet-cli）の不具合を報告します。
+description: VilaNet コマンドラインクライアント（vilanet-cli）の再現可能な不具合を報告します。
 title: "[Bug] "
 labels: ["bug"]
 body:
@@ -107,7 +107,7 @@ body:
     id: description
     attributes:
       label: 不具合の説明
-      description: 具体的に何が起きましたか？何を目にしましたか？
+      description: 具体的に何が起きましたか？何を見ましたか？
       placeholder: "connect 実行後ずっと「connecting」のままで、約 30 秒後に終了する……"
     validations:
       required: true
@@ -117,7 +117,7 @@ body:
     attributes:
       label: 再現手順（必須）
       description: |
-        **必須 — 実際に行った順番どおりに、1 行に 1 ステップずつ記入してください。** ログイン / インストールから始め、実行したコマンドを順に挙げてください。手順どおりに再現できなければ修正できません。
+        **必須。実際に行った順番どおりに、1 行に 1 ステップずつ記入してください。** ログイン / インストールから始め、実行したコマンドを順に挙げてください。手順どおりに再現できなければ修正できません。
       placeholder: |
         1. vilanet-cli login
         2. vilanet-cli servers
@@ -130,10 +130,10 @@ body:
   - type: textarea
     id: expected
     attributes:
-      label: 期待する動作 vs 実際の動作
+      label: 期待する動作と実際の動作
       description: 何が起きると期待し、実際には何が起きましたか？
       placeholder: |
-        期待：接続成功し、status が connected になる。
+        期待：接続に成功し、status が connected になる。
         実際：接続が止まり、約 30 秒後に終了コード 5 で終了する。
     validations:
       required: true
@@ -145,7 +145,7 @@ body:
       description: |
         **これが最も重要な項目です。** ターミナル出力全文とログを貼り付けてください。
 
-        ログの取得：リアルタイムは `vilanet-cli logs --follow`／またはログディレクトリ —— Linux：`~/.local/state/vilanet/logs/`、macOS：`~/Library/Logs/com.viraltech.vilanet/`、Windows：`%LOCALAPPDATA%\VilaNet\Logs\`。
+        ログの取得：リアルタイムは `vilanet-cli logs --follow`、またはログディレクトリ（Linux：`~/.local/state/vilanet/logs/`、macOS：`~/Library/Logs/com.viraltech.vilanet/`、Windows：`%LOCALAPPDATA%\VilaNet\Logs\`）。
       render: shell
     validations:
       required: true
@@ -155,7 +155,7 @@ body:
     attributes:
       label: 診断バンドル（任意・強く推奨）
       description: |
-        `vilanet-cli diag` を実行すると、**機微情報を除去した**サポートバンドル（.tar.gz、共有しても安全）が生成されます。生成されたファイルをここにドラッグするか、パスを貼り付けてください。
+        `vilanet-cli diag` を実行すると、**機微情報を除去した**診断バンドル（.tar.gz、共有しても安全）が生成されます。生成されたファイルをここにドラッグするか、パスを貼り付けてください。
       placeholder: "vilanet-cli diag で生成された .tar.gz をここにドラッグしてください。"
     validations:
       required: false

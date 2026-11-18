@@ -1,5 +1,5 @@
 name: 機能リクエスト（日本語）
-description: 具体的で評価可能な vilanet-cli の機能リクエストを送ります。
+description: vilanet-cli の具体的で検討可能な機能リクエストを送ります。
 title: "[Feature] "
 labels: ["enhancement"]
 body:
@@ -65,10 +65,10 @@ body:
   - type: textarea
     id: problem
     attributes:
-      label: 現在の問題またはユースケース
-      description: 今、何が不便・不足・誤解を招きやすいですか？実際のシナリオを記入してください。
+      label: 現在の問題またはシナリオ
+      description: 今、何が不便で、何が不足していて、何が誤解を招きやすいですか？実際のシナリオを記入してください。
       placeholder: |
-        例：スクリプト内で connect が本当にトンネルを確立したか判定できず、sleep してから status を呼ぶしかない。接続準備完了（またはタイムアウト）までブロックするコマンドが欲しい。
+        例：スクリプト内で connect が本当にトンネルを確立したか判定できず、sleep してから status を呼ぶしかない。接続の準備が完了する（またはタイムアウトする）までブロックするコマンドが欲しい。
     validations:
       required: true
 
@@ -78,7 +78,7 @@ body:
       label: 何を追加・変更してほしいですか？
       description: 概念だけでなく、具体的な動作として記入してください。
       placeholder: |
-        例：`vilanet-cli connect --wait --timeout 30s` を追加し、トンネル準備完了で終了コード 0、タイムアウトで非 0 を返す。
+        例：`vilanet-cli connect --wait --timeout 30s` を追加し、トンネルの準備が完了したら終了コード 0、タイムアウトで非 0 を返す。
     validations:
       required: true
 
@@ -116,7 +116,7 @@ body:
           required: true
         - label: "プラットフォーム・機能領域・リクエスト種別を具体的に選択しました。"
           required: true
-        - label: "現在の問題またはユースケースと、追加・変更してほしい具体的な動作を記入しました。"
+        - label: "現在の問題またはシナリオと、追加・変更してほしい具体的な動作を記入しました。"
           required: true
         - label: "「機能を追加して」「改善して」のような曖昧なリクエストはクローズされることを理解しています。"
           required: true
