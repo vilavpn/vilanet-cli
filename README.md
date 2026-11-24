@@ -67,7 +67,8 @@ tar -xzf vilanet-cli_*_darwin_*.tar.gz
 sudo install -m 0755 vilanet-cli /usr/local/bin/
 ```
 
-TUN mode requires `sudo` on first run. For a proxy-only mode that needs no
+TUN mode needs `sudo` every time you connect, so run every command with
+`sudo` (`login` included) to keep one config and one session. For a proxy-only mode that needs no
 privileges:
 
 ```bash
@@ -104,20 +105,22 @@ Start-Service VilaNetCLI
 
 ## Quick start
 
+All in one terminal (Linux/macOS):
+
 ```bash
 vilanet-cli login --email you@example.com    # prompts for password
-vilanet-cli list servers --country HK        # browse available nodes
-vilanet-cli connect --country HK             # foreground; Ctrl-C to stop
-```
-
-Background daemon (Linux/macOS):
-
-```bash
-vilanet-cli connect --background --country HK
-vilanet-cli status --json                    # check daemon state
+vilanet-cli connect --background --country HK  # tunnel in the background; prompt comes back
+vilanet-cli status                           # node + exit IP
+vilanet-cli list servers --country JP        # browse other nodes
 vilanet-cli switch --node <hex-id>           # swap node without reconnecting
 vilanet-cli disconnect                       # idempotent; safe even if stopped
 ```
+
+`status`, `switch` and `disconnect` reach only a session that the same user
+started with `--background`. Without `--background`, `connect` stays in the
+foreground: stop it with Ctrl-C in its own terminal. On Linux, after the
+`setcap` step, run every command without `sudo`. On Windows, use the Windows
+Service (there is no `--background`).
 
 ---
 

@@ -33,8 +33,9 @@ drive it for an end user.
 
 ```
 $ vilanet-cli login        # stores creds in OS keyring (or plaintext with --insecure-store)
-$ vilanet-cli connect      # foreground; Ctrl-C disconnects
-                           # OR --background to detach (Linux/macOS only — see Windows note)
+$ vilanet-cli connect --background  # detach (Linux/macOS only — see Windows note); status/switch/disconnect reach it
+$ vilanet-cli connect      # foreground; ONLY Ctrl-C in that terminal stops it —
+                           # status/switch/disconnect cannot see a foreground connect
 $ vilanet-cli status       # asks the running daemon over a Unix socket (Linux/macOS)
 $ vilanet-cli switch       # tells the daemon to restart on another node (Linux/macOS)
 $ vilanet-cli disconnect   # idempotent
@@ -62,8 +63,15 @@ If `vilanet-cli` is missing, the user must install it first
 ```bash
 vilanet-cli login --email you@example.com           # password prompt
 vilanet-cli list servers --country HK               # see what's available
-vilanet-cli connect --country HK                    # foreground; Ctrl-C to stop
+vilanet-cli connect --background --country HK       # background; prompt comes back
+vilanet-cli status                                  # node + egress IP
+vilanet-cli disconnect                              # stop
 ```
+
+Prefer `--background` when you act for a user: a foreground `connect` blocks
+the terminal, and `status`, `switch` and `disconnect` cannot see it. Run every
+command as the same user: on Linux use the `setcap` install and no `sudo`; on
+macOS TUN needs `sudo`, so use `sudo` for every command, `login` included.
 
 For a non-blocking proxy on Unix:
 
@@ -275,8 +283,8 @@ something seems wrong — it's cheap and tells you whether a daemon is alive.
 | `connect` exits 5                                        | —                                                | See exit-code 5 row above                                                                        |
 | `connect` exits 4                                        | `vilanet-cli status --json`                      | Likely no creds → `login`. If recently logged in → rate-limit, wait.                            |
 | `connect` hangs                                          | `vilanet-cli logs --lines 200`                   | Look for TLS / DNS errors; suggest swapping `dns1` to a reachable resolver                       |
-| `switch` says "no daemon"                                | `vilanet-cli status`                             | Run `connect` first; `switch` only swaps a running daemon                                        |
-| `disconnect` "no daemon" but tunnel still active         | `pgrep -af vilanet-cli`                          | Stale orphan: `kill <pid>` then `vilanet-cli disconnect` again                                   |
+| `switch` says "no daemon"                                | `vilanet-cli status`                             | Run `connect --background` first; `switch` only swaps a background session of the same user      |
+| `status` says `running: false` or `disconnect` says "no daemon", but the tunnel is still active | `pgrep -af vilanet-cli` | Usually a foreground `connect` in another terminal: stop it there with Ctrl-C. If the session was started with `sudo`, run `sudo vilanet-cli status` / `sudo vilanet-cli disconnect`. Do not kill the PID or delete the socket as a first step |
 | `bind: address already in use` (mixed / Clash port)      | `vilanet-cli logs`                               | Change `mixed.port` / `clash_api.port` via `settings set`                                        |
 | macOS LaunchAgent crash-loop                             | `log show --predicate 'process == "vilanet-cli"' --last 5m` | LaunchAgent runs as user — must use `--no-tun --mixed`, NOT TUN                            |
 | Linux service starts but no IPC                          | `systemctl status vilanet-cli@$USER`             | Confirm capability set: `getcap $(command -v vilanet-cli)` should list `cap_net_admin`           |
