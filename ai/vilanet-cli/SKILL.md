@@ -1,6 +1,6 @@
 ---
 name: vilanet-cli
-description: Drive the vilanet-cli VPN client end-to-end on Linux, macOS, and Windows — login, list packages/servers, connect, switch nodes, disconnect, inspect status, tail logs, change settings, generate a redacted support bundle (diag), self-update (update, auto_update), and install/uninstall as a background service. Use whenever the user mentions VilaNet, vilanet-cli, the VilaNet VPN, "connect to my VPN", "switch nodes", "TUN privileges missing", a vilanet-cli exit code (1, 2, 3, 4, 5, 9), a settings key (e.g. routing_mode, tun.stack, hy2.speed_mode, network.dns_mode, block_quic, block_stun, block_dot, auto_update), the diag/update commands, or wants to set up VilaNet as a background service (systemd, LaunchAgent, Windows Service).
+description: Drive the vilanet-cli VPN client end-to-end on Linux, macOS, and Windows — login, list packages/servers, connect, switch nodes, disconnect, inspect status, tail logs, change settings, generate a redacted support bundle (diag), self-update (update, auto_update), and install/uninstall as a background service. Use whenever the user mentions VilaNet, vilanet-cli, the VilaNet VPN, "connect to my VPN", "switch nodes", "TUN privileges missing", a vilanet-cli exit code (1, 2, 3, 4, 5, 6, 7, 9), a settings key (e.g. routing_mode, tun.stack, hy2.speed_mode, network.dns_mode, block_quic, block_stun, block_dot, auto_update), the diag/update commands, or wants to set up VilaNet as a background service (systemd, LaunchAgent, Windows Service).
 ---
 
 # vilanet-cli — operator skill for AI agents
@@ -34,8 +34,8 @@ drive it for an end user.
 ```
 $ vilanet-cli login        # stores creds in OS keyring (or plaintext with --insecure-store)
 $ vilanet-cli connect --background  # detach (Linux/macOS only — see Windows note); status/switch/disconnect reach it
-$ vilanet-cli connect      # foreground; ONLY Ctrl-C in that terminal stops it —
-                           # status/switch/disconnect cannot see a foreground connect
+$ vilanet-cli connect      # foreground; Ctrl-C there, or `disconnect` from another
+                           # terminal (1.3.0+; older versions: Ctrl-C only)
 $ vilanet-cli status       # asks the running daemon over a Unix socket (Linux/macOS)
 $ vilanet-cli switch       # tells the daemon to restart on another node (Linux/macOS)
 $ vilanet-cli disconnect   # idempotent
@@ -69,7 +69,7 @@ vilanet-cli disconnect                              # stop
 ```
 
 Prefer `--background` when you act for a user: a foreground `connect` blocks
-the terminal, and `status`, `switch` and `disconnect` cannot see it. Run every
+the terminal (before 1.3.0, `status`, `switch` and `disconnect` could not see it). Run every
 command as the same user: on Linux use the `setcap` install and no `sudo`; on
 macOS TUN needs `sudo`, so use `sudo` for every command, `login` included.
 
@@ -134,12 +134,18 @@ vilanet-cli connect [--auto | --country <ISO2> | --node <hex16>]
 ### `switch`
 
 ```
-vilanet-cli switch --node <hex16>
+vilanet-cli switch --node <ID | ID prefix (4+ hex) | server name>
+vilanet-cli switch --country <ISO2>
+vilanet-cli switch --auto
 ```
 
-Tells the running daemon to restart on a different node. **Brief
-packet-loss window (~1–2 s)** while sing-box restarts. Preserves the
-credential cache, so it's faster than `disconnect && connect`.
+Tells the running session (foreground or `--background`, same user) to
+restart on another server. Pass exactly one selector; `--package <id>`
+picks the package for `--country`/`--auto`. An unclear name lists the
+matches. A server or country this client cannot use is refused before the
+restart and the current server stays. Brief packet loss while sing-box
+restarts; credentials stay cached. A slow switch prints "still in
+progress — check `vilanet-cli status`". Before 1.3.0: `--node <hex16>` only.
 
 ### `disconnect`
 
@@ -267,9 +273,11 @@ Stable across releases. Shell scripts and AI tools may rely on these.
 |------|-----------------------------------------------|-------------------------------------------------------------------------------------------------------|
 | 0    | Success                                       | —                                                                                                     |
 | 1    | Generic error (bad flag, IO, JSON encoding)   | Re-read the stderr line; if `--debug` is missing, retry with it.                                      |
-| 2    | Authentication failed                         | `vilanet-cli login` again. Check email / password.                                                    |
+| 2    | Authentication failed (the server rejected the login) | `vilanet-cli login` again. Check email / password.                                         |
 | 3    | Account closed                                | Tell the user to contact VilaNet support — the CLI cannot fix this.                                   |
 | 4    | Rate-limited **or** no stored credentials     | Run `vilanet-cli login`. If that succeeded recently, wait the rate-limit window (minutes).            |
+| 6    | Cannot reach the VilaNet service (1.3.0+)     | Network or proxy problem: check connectivity, `HTTPS_PROXY`, or `--no-proxy`. Saved credentials are unchanged; their validity was not established — read the full error before asking for a new login. |
+| 7    | No usable plan on this account (1.3.0+)       | Ask the user to check their plan in the VilaVPN account, or contact support. |
 | 5    | TUN privileges missing                        | Linux: `sudo setcap cap_net_admin,cap_net_bind_service+eip $(command -v vilanet-cli)`. macOS: run with `sudo`. Windows: launch elevated, or use Windows Service. Or fall back to `--no-tun --mixed 127.0.0.1:1080`. |
 | 9    | `--background` not supported on Windows       | Install the Windows Service (`packaging/windows/install-service.ps1`).                                |
 
@@ -284,7 +292,7 @@ something seems wrong — it's cheap and tells you whether a daemon is alive.
 | `connect` exits 4                                        | `vilanet-cli status --json`                      | Likely no creds → `login`. If recently logged in → rate-limit, wait.                            |
 | `connect` hangs                                          | `vilanet-cli logs --lines 200`                   | Look for TLS / DNS errors; suggest swapping `dns1` to a reachable resolver                       |
 | `switch` says "no daemon"                                | `vilanet-cli status`                             | Run `connect --background` first; `switch` only swaps a background session of the same user      |
-| `status` says `running: false` or `disconnect` says "no daemon", but the tunnel is still active | `pgrep -af vilanet-cli` | Usually a foreground `connect` in another terminal: stop it there with Ctrl-C. If the session was started with `sudo`, run `sudo vilanet-cli status` / `sudo vilanet-cli disconnect`. Do not kill the PID or delete the socket as a first step |
+| `status` says `running: false` or `disconnect` says "no daemon", but the tunnel is still active | `pgrep -af vilanet-cli` | On versions before 1.3.0, usually a foreground `connect` in another terminal: stop it there with Ctrl-C (1.3.0+ reports a foreground session). If the session was started with `sudo`, run `sudo vilanet-cli status` / `sudo vilanet-cli disconnect`. Do not kill the PID or delete the socket as a first step |
 | `bind: address already in use` (mixed / Clash port)      | `vilanet-cli logs`                               | Change `mixed.port` / `clash_api.port` via `settings set`                                        |
 | macOS LaunchAgent crash-loop                             | `log show --predicate 'process == "vilanet-cli"' --last 5m` | LaunchAgent runs as user — must use `--no-tun --mixed`, NOT TUN                            |
 | Linux service starts but no IPC                          | `systemctl status vilanet-cli@$USER`             | Confirm capability set: `getcap $(command -v vilanet-cli)` should list `cap_net_admin`           |

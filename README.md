@@ -112,13 +112,14 @@ vilanet-cli login --email you@example.com    # prompts for password
 vilanet-cli connect --background --country HK  # tunnel in the background; prompt comes back
 vilanet-cli status                           # node + exit IP
 vilanet-cli list servers --country JP        # browse other nodes
-vilanet-cli switch --node <hex-id>           # swap node without reconnecting
+vilanet-cli switch --country SG              # or --node <name, ID or ID prefix>, --auto
 vilanet-cli disconnect                       # idempotent; safe even if stopped
 ```
 
-`status`, `switch` and `disconnect` reach only a session that the same user
-started with `--background`. Without `--background`, `connect` stays in the
-foreground: stop it with Ctrl-C in its own terminal. On Linux, after the
+`status`, `switch` and `disconnect` reach the session that the same user
+started, in the foreground or with `--background` (1.3.0+; before 1.3.0 only
+`--background`). A foreground `connect` also stops with Ctrl-C in its own
+terminal, or when you close that terminal. On Linux, after the
 `setcap` step, run every command without `sudo`. On Windows, use the Windows
 Service (there is no `--background`).
 
@@ -134,7 +135,7 @@ Service (there is no `--background`).
 | `connect [--auto \| --country ISO2 \| --node ID]` | Start VPN tunnel |
 | `connect --background` | Detach to daemon (Linux/macOS only) |
 | `connect --no-tun --mixed HOST:PORT` | SOCKS5+HTTP proxy, no TUN/privileges needed |
-| `switch --node ID` | Swap node in-place (~1–2 s packet loss) |
+| `switch --node ID\|NAME`, `--country XX`, `--auto` | Swap server in-place (brief packet loss); works on a foreground or background session |
 | `status [--json] [--stats]` | Daemon state and traffic counters |
 | `disconnect` | Stop daemon |
 | `settings list` | Dump all settings |
@@ -187,6 +188,8 @@ Stable across releases — shell scripts may rely on these.
 | 2 | Authentication failed | `vilanet-cli login` again |
 | 3 | Account closed | Contact VilaVPN support |
 | 4 | Rate-limited or no stored credentials | Run `vilanet-cli login` |
+| 6 | Cannot reach the VilaNet service (network or proxy) | Check your connection / `HTTPS_PROXY`, or use `--no-proxy`; your saved login is unchanged |
+| 7 | No usable plan on this account | Check your plan in your VilaVPN account |
 | 5 | TUN privileges missing | `sudo setcap` (Linux) / `sudo` (macOS) / run elevated (Windows); or use `--no-tun --mixed` |
 | 9 | `--background` not supported on Windows | Install as a Windows Service |
 
